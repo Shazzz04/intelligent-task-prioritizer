@@ -14,7 +14,7 @@ const TaskDashboard = () => {
         credit_weight: 15,
         difficulty_level: 5,
         intensity: 4,
-        grade_impact: 10, // NEW: Aligned with MCDM Proposal
+        grade_impact: 10,
         subtasks: [],
         is_done: false
     };
@@ -36,7 +36,12 @@ const TaskDashboard = () => {
                 ...t,
                 subtasks: Array.isArray(t.subtasks) ? t.subtasks : []
             }));
+
+            // INTELLIGENT SORTING: 
+            // This is the "Decision Engine". It sorts by the MCDM priority score 
+            // so the student always sees the most critical task first.
             const sortedTasks = normalizedTasks.sort((a, b) => b.priority_score - a.priority_score);
+
             setTasks(sortedTasks);
             setCompletedCount(normalizedTasks.filter(t => t.is_done).length);
         }).catch(err => console.error("Fetch failed:", err));
@@ -51,7 +56,12 @@ const TaskDashboard = () => {
     }, [fetchTasks]);
 
     const handleFieldChange = (field, value) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        // If it's a numeric field, parse it to an Integer so the backend 
+        // doesn't receive a string which can break the MCDM math.
+        const numericFields = ['credit_weight', 'difficulty_level', 'intensity', 'grade_impact'];
+        const finalValue = numericFields.includes(field) ? parseInt(value) || 0 : value;
+
+        setFormData(prev => ({ ...prev, [field]: finalValue }));
     };
 
     const toggleMainTaskDone = async (task) => {
@@ -91,10 +101,16 @@ const TaskDashboard = () => {
     };
 
     const getUrgencyBadge = (score) => {
-        if (score > 50) return { label: 'URGENT', color: '#FF4B2B' };
-        if (score > 25) return { label: 'MEDIUM', color: '#FFB75E' };
-        return { label: 'LOW', color: '#00C9FF' };
+        // Threshold matched to backend: 50+ is URGENT
+        if (score >= 50) return { label: 'URGENT ⚡', color: '#FF4B2B' };
+
+        // Threshold matched to backend: 25-49 is MEDIUM
+        if (score >= 25) return { label: 'MEDIUM ⚠️', color: '#FFB75E' };
+
+        // Everything else is LOW
+        return { label: 'LOW ✅', color: '#00C9FF' };
     };
+
 
     const dailyProgress = tasks.length > 0 ? Math.round((completedCount / tasks.length) * 100) : 0;
 
@@ -109,12 +125,35 @@ const TaskDashboard = () => {
                     <div style={{ background: '#f0f4ff', padding: '15px 25px', borderRadius: '15px', borderLeft: '5px solid #6e8efb', margin: '20px 0', textAlign: 'center' }}>
                         <p style={{ fontStyle: 'italic', color: '#555', margin: 0, fontSize: '1rem' }}>"{activeQuote}"</p>
                     </div>
+                    <div style={{ padding: '40px 20px', maxWidth: '800px', margin: 'auto', fontFamily: "'Inter', sans-serif" }}>
+                        {/* ... existing back button ... */}
+                        <div style={{ background: 'white', padding: '40px', borderRadius: '25px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                            <h2 style={{ textAlign: 'center', marginBottom: '10px', color: '#333' }}>{formData.title}</h2>
 
+                            {/* ADD PRIORITY SCORE DISPLAY */}
+                            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+                                <div style={{
+                                    background: getUrgencyBadge(formData.priority_score || 0).color,
+                                    color: 'white',
+                                    padding: '12px 24px',
+                                    borderRadius: '25px',
+                                    display: 'inline-block',
+                                    fontWeight: '800',
+                                    fontSize: '1.1rem'
+                                }}>
+                                    Priority: {formData.priority_score?.toFixed(1) || 'N/A'}
+                                    {getUrgencyBadge(formData.priority_score || 0).label}
+                                </div>
+                            </div>
+
+                            {/* ... rest of existing focus mode UI ... */}
+                        </div>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '10px', marginBottom: '30px' }}>
-                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>CREDITS</label><input type="number" value={formData.credit_weight} onChange={(e) => handleFieldChange('credit_weight', e.target.value)} style={{ width: '100%', padding: '8px' }} /></div>
-                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>DIFF</label><input type="number" value={formData.difficulty_level} onChange={(e) => handleFieldChange('difficulty_level', e.target.value)} style={{ width: '100%', padding: '8px' }} /></div>
-                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>INT</label><input type="number" value={formData.intensity} onChange={(e) => handleFieldChange('intensity', e.target.value)} style={{ width: '100%', padding: '8px' }} /></div>
-                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>GRADE %</label><input type="number" value={formData.grade_impact} onChange={(e) => handleFieldChange('grade_impact', e.target.value)} style={{ width: '100%', padding: '8px' }} /></div>
+                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>CREDITS</label><input type="number" value={formData.credit_weight} onChange={(e) => handleFieldChange('credit_weight', parseInt(e.target.value))} style={{ width: '100%', padding: '8px' }} /></div>
+                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>DIFF</label><input type="number" value={formData.difficulty_level} onChange={(e) => handleFieldChange('difficulty_level', parseInt(e.target.value))} style={{ width: '100%', padding: '8px' }} /></div>
+                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>INT</label><input type="number" value={formData.intensity} onChange={(e) => handleFieldChange('intensity', parseInt(e.target.value))} style={{ width: '100%', padding: '8px' }} /></div>
+                        <div><label style={{ fontSize: '9px', fontWeight: '800' }}>GRADE %</label><input type="number" value={formData.grade_impact} onChange={(e) => handleFieldChange('grade_impact', parseInt(e.target.value))} style={{ width: '100%', padding: '8px' }} /></div>
                     </div>
 
                     <h3 style={{ borderTop: '1px solid #eee', paddingTop: '20px' }}>📋 Steps to Success</h3>
@@ -125,7 +164,7 @@ const TaskDashboard = () => {
 
                     <div style={{ marginBottom: '30px' }}>
                         {formData.subtasks.map((st) => (
-                            <div key={st.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', background: '#f9f9f9', borderRadius: '10px', marginBottom: '8px', transition: '0.3s' }}>
+                            <div key={st.id} style={{ display: 'flex', alignItems: 'center', padding: '12px', background: '#f9f9f9', borderRadius: '10px', marginBottom: '8px' }}>
                                 <input type="checkbox" checked={st.completed} onChange={() => toggleSubtask(st.id)} style={{ cursor: 'pointer' }} />
                                 <span style={{ marginLeft: '10px', textDecoration: st.completed ? 'line-through' : 'none', color: st.completed ? '#aaa' : '#333' }}>{st.text}</span>
                             </div>
@@ -165,7 +204,6 @@ const TaskDashboard = () => {
                         <input type="text" placeholder="Task Title" value={formData.title} onChange={(e) => handleFieldChange('title', e.target.value)} required style={{ flex: 2, padding: '15px', borderRadius: '10px', border: '1px solid #e0e0e0', fontSize: '1rem' }} />
                         <input type="datetime-local" value={formData.deadline} onChange={(e) => handleFieldChange('deadline', e.target.value)} required style={{ flex: 1, padding: '15px', borderRadius: '10px', border: '1px solid #e0e0e0' }} />
                     </div>
-                    {/* UPDATED GRID FOR 4 SLIDERS */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '20px', marginBottom: '30px' }}>
                         <div><label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px', fontSize: '13px' }}>Credits: {formData.credit_weight}</label><input type="range" min="1" max="30" value={formData.credit_weight} onChange={(e) => handleFieldChange('credit_weight', parseInt(e.target.value))} style={{ width: '100%' }} /></div>
                         <div><label style={{ fontWeight: 'bold', display: 'block', marginBottom: '10px', fontSize: '13px' }}>Difficulty: {formData.difficulty_level}</label><input type="range" min="1" max="10" value={formData.difficulty_level} onChange={(e) => handleFieldChange('difficulty_level', parseInt(e.target.value))} style={{ width: '100%' }} /></div>
@@ -175,6 +213,7 @@ const TaskDashboard = () => {
                     <button type="submit" style={{ background: '#007bff', color: 'white', border: 'none', padding: '12px 30px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}>Add Task</button>
                 </form>
             </div>
+            
 
             <div style={{ background: 'white', borderRadius: '20px', overflow: 'hidden', boxShadow: '0 5px 15px rgba(0,0,0,0.05)' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -189,28 +228,107 @@ const TaskDashboard = () => {
                     <tbody>
                         {tasks.map(task => {
                             const urgency = getUrgencyBadge(task.priority_score);
+
+                            // Calculate hours remaining for display
+                            const now = new Date();
+                            const deadline = new Date(task.deadline);
+                            const hoursLeft = Math.max(Math.round((deadline - now) / 3600 / 1000), 0);
+                            const timeStatus = hoursLeft === 0 ? 'OVERDUE ⚠️' : `${hoursLeft}h left`;
+
                             return (
-                                <tr key={task.id} style={{ borderBottom: '1px solid #f0f0f0', opacity: task.is_done ? 0.6 : 1 }}>
+                                <tr
+                                    key={task.id}
+                                    style={{
+                                        borderBottom: '1px solid #f0f0f0',
+                                        opacity: task.is_done ? 0.6 : 1,
+                                        backgroundColor: task.priority_score >= 50 ? '#fff5f5' :
+                                            task.priority_score >= 25 ? '#fff8e1' : 'transparent' // Row highlighting
+                                    }} >
+                                    {/* Task Title & Checkbox */}
                                     <td style={{ padding: '20px', fontWeight: '600' }}>
-                                        <input type="checkbox" checked={task.is_done} onChange={() => toggleMainTaskDone(task)} style={{ width: '18px', height: '18px', cursor: 'pointer', marginRight: '12px', verticalAlign: 'middle' }} />
-                                        <span style={{ textDecoration: task.is_done ? 'line-through' : 'none' }}>{task.title}</span>
-                                    </td>
-                                    <td style={{ padding: '20px', textAlign: 'center' }}>
-                                        <span style={{ background: task.is_done ? '#eee' : urgency.color, color: task.is_done ? '#888' : 'white', padding: '6px 15px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: '900' }}>
-                                            {task.is_done ? 'DONE' : urgency.label}
+                                        <input
+                                            type="checkbox"
+                                            checked={task.is_done}
+                                            onChange={() => toggleMainTaskDone(task)}
+                                            style={{
+                                                width: '18px',
+                                                height: '18px',
+                                                cursor: 'pointer',
+                                                marginRight: '12px',
+                                                verticalAlign: 'middle'
+                                            }}
+                                        />
+                                        <span style={{
+                                            textDecoration: task.is_done ? 'line-through' : 'none',
+                                            color: task.priority_score > 70 ? '#d32f2f' : '#333'
+                                        }}>
+                                            {task.title}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '20px', textAlign: 'center', color: '#666' }}>{task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}</td>
-                                    <td style={{ padding: '20px', textAlign: 'right' }}>
-                                        <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                                            <button onClick={() => openEditMode(task)} style={{ background: '#f0f0f0', border: 'none', padding: '8px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Edit</button>
-                                            <button onClick={() => handleDelete(task.id)} style={{ background: '#ffebee', color: '#ff4d4d', border: 'none', padding: '8px 15px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Delete</button>
+
+                                    {/* PRIORITY SCORE + URGENCY BADGE (NEW RESEARCH-GRADE) */}
+                                    <td style={{ padding: '20px', textAlign: 'center' }}>
+                                        <div style={{ marginBottom: '4px', fontWeight: '800', color: '#666', fontSize: '0.85rem' }}>
+                                            {task.priority_score?.toFixed(0) || 'N/A'}
                                         </div>
+                                        <span style={{
+                                            background: task.is_done ? '#e0e0e0' : urgency.color,
+                                            color: task.is_done ? '#888' : 'white',
+                                            padding: '8px 16px',
+                                            borderRadius: '20px',
+                                            fontSize: '0.8rem',
+                                            fontWeight: '900',
+                                            boxShadow: task.priority_score > 70 ? '0 2px 8px rgba(255,75,43,0.3)' : 'none'
+                                        }}>
+                                            {task.is_done ? 'DONE ✅' : urgency.label}
+                                        </span>             
                                     </td>
+
+                            {/* DEADLINE + HOURS REMAINING */ }
+                            <td style={{ padding: '20px', textAlign: 'center' }}>
+                                <div style={{ fontWeight: '600', color: hoursLeft <= 24 ? '#d32f2f' : '#666' }}>
+                                    {timeStatus}
+                                </div>
+                                <div style={{ fontSize: '0.8rem', color: '#999', marginTop: '2px' }}>
+                                    {task.deadline ? new Date(task.deadline).toLocaleDateString() : 'N/A'}
+                                </div>
+                            </td>
+
+                            {/* ACTIONS */ }
+                            <td style={{ padding: '20px', textAlign: 'right' }}>
+                                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                    <button
+                                        onClick={() => openEditMode(task)}
+                                        style={{
+                                            background: '#f0f0f0',
+                                            border: 'none',
+                                            padding: '8px 16px',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.85rem'
+                                        }}>Edit
+                                    </button>
+                                    <button
+                                        onClick={() => handleDelete(task.id)}
+                                        style={{
+                                            background: '#ffebee',
+                                            color: '#d32f2f',
+                                            border: 'none',
+                                            padding: '8px 16px',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: 'bold',
+                                            fontSize: '0.85rem'
+                                        }}> Delete
+                                    </button>
+                                </div>
+                            </td>
                                 </tr>
-                            );
-                        })}
-                    </tbody>
+                    );
+    })}
+                </tbody>
+
                 </table>
             </div>
         </div>
