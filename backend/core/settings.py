@@ -124,3 +124,4 @@ CORS_ALLOWED_ORIGINS = ["http://localhost:3000"]
 
 import os
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+PORT = os.environ.get('PORT', '8000')
