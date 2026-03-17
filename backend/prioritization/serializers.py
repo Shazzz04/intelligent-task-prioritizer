@@ -12,7 +12,8 @@ class TaskSerializer(serializers.ModelSerializer):
             'credit_weight', 
             'difficulty_level', 
             'intensity', 
+            'grade_impact',
             'priority_score',
-            'is_done',    # Added this
-            'subtasks'    # Added this
+            'is_done'   # Added this
+
         ]
