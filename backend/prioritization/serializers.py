@@ -14,6 +14,6 @@ class TaskSerializer(serializers.ModelSerializer):
             'intensity', 
             'grade_impact',
             'priority_score',
-            'is_done'   # Added this
-
+            'is_done',
+            'student_name',
         ]

@@ -4,7 +4,7 @@ from .views import TaskViewSet
 
 # The router automatically creates the API routes for us
 router = DefaultRouter()
-router.register(r'tasks', TaskViewSet)
+router.register(r'tasks', TaskViewSet, basename='task')
 
 urlpatterns = [
     path('', include(router.urls)),

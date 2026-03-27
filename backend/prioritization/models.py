@@ -22,6 +22,9 @@ class Task(models.Model):
     priority_score = models.FloatField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Student Filtering — identifies which student owns this task
+    student_name = models.CharField(max_length=100, default='default')
+
     def save(self, *args, **kwargs):
         """
         UNIVERSITY STUDENT PRIORITY ENGINE v2.0
@@ -69,21 +72,12 @@ class Task(models.Model):
 
     @property
     def urgency_category(self):
-        """
-        Categorization based on priority score.
-        24hr override: any task due within 24 hours is always URGENT
-        regardless of score — temporal proximity overrides all other
-        factors (Steel, 2007). Reduces decision burden (Schwartz, 2004).
-        """
         if self.priority_score is None:
             return "LOW"
-
-        # 24 hour deadline override
         time_diff = self.deadline - timezone.now()
         hours_left = max(time_diff.total_seconds() / 3600, 0)
         if hours_left <= 24 and not self.is_done:
             return "URGENT"
-
         elif self.priority_score >= 50:
             return "URGENT"
         elif self.priority_score >= 25:
