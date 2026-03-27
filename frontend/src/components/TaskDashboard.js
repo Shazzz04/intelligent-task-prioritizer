@@ -25,7 +25,6 @@ class TaskDashboard extends Component {
     }
 
     // ── UNIQUE STUDENT IDENTIFIER ───────────────────────────────
-    // Essential for your Netlify testing so students don't see each other's tasks.
     getStudentId = () => {
         const params = new URLSearchParams(window.location.search);
         return params.get('user') || 'default_student';
@@ -94,9 +93,11 @@ class TaskDashboard extends Component {
         } catch (err) { console.error(err); }
     }
 
+    // ── FIX: studentId now passed to deleteTask ─────────────────
     handleDelete = (id) => {
+        const studentId = this.getStudentId();
         if (window.confirm("Remove this task?")) {
-            deleteTask(id).then(() => this.fetchTasks());
+            deleteTask(id, studentId).then(() => this.fetchTasks());
         }
     }
 
