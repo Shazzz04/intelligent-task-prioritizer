@@ -7,7 +7,6 @@ class TaskViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Filter tasks by student_name from URL parameter
-        # e.g. /api/tasks/?user=student1
         student_name = self.request.query_params.get('user', 'default')
         return Task.objects.filter(student_name=student_name).order_by('-priority_score')
 
