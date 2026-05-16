@@ -66,34 +66,21 @@ Runs at http://localhost:3000 — keep terminal open.
 Open browser and go to:
 http://localhost:3000?user=student1
 
-Replace student1 with your assigned identifier.
-
----
-
-## Project Structure
 intelligent-task-prioritizer/
+│
 ├── backend/
-│   ├── prioritization/
-│   │   ├── models.py        # MCDM engine in save() method
-│   │   ├── serializers.py   # REST serialization
-│   │   ├── views.py         # Student filtering ViewSet
-│   │   └── urls.py
-│   ├── core/
-│   │   ├── settings.py
-│   │   └── urls.py
-│   ├── requirements.txt
-│   └── manage.py
+│
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   │   └── TaskDashboard.jsx
-│   │   └── services/
-│   │       └── api.js
-│   └── package.json
-└── README.md
-
+│
+├── public/
+│
+├── src/
+│
+├── .gitignore
+├── README.md
+├── package-lock.json
+└── package.json
 ---
-
 ## API Endpoints
 
 | Method | Endpoint | Action |
