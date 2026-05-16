@@ -9,10 +9,9 @@ Student: Shaza Faizer | Supervisor: Deshan Cooray
 
 ## Overview
 
-A full-stack web application that automatically prioritizes academic
-tasks using a formally derived MCDM algorithm:
+A full-stack web application that automatically prioritizes academic tasks using a formally derived MCDM algorithm:
 
-P = 100 × (0.65I + 0.25U + 0.10E)
+**P = 100 × (0.65I + 0.25U + 0.10E)**
 
 - Importance (I) — AHP pairwise derivation (Saaty, 1980)
 - Urgency (U) — Temporal Motivation Theory (Steel, 2007)
@@ -26,12 +25,7 @@ P = 100 × (0.65I + 0.25U + 0.10E)
 - Backend: Django — runs locally on localhost:8000
 - Database: SQLite via Django ORM
 
-Note: The system was deployed on Railway (backend) and Netlify
-(frontend) throughout the participant evaluation period
-(24 March – 7 April 2026). Following evaluation, both layers
-were transitioned to a local environment for the viva
-demonstration. The MCDM logic, database, and interface
-remain identical across both environments.
+> Note: The system was deployed on Railway (backend) and Netlify (frontend) throughout the participant evaluation period (24 March – 7 April 2026). Following evaluation, both layers were transitioned to a local environment for the viva demonstration. The MCDM logic, database, and interface remain identical across both environments.
 
 ---
 
@@ -47,7 +41,7 @@ python manage.py migrate
 python manage.py runserver
 ```
 
-Runs at http://localhost:8000 — keep terminal open.
+Runs at http://localhost:8000 — keep this terminal open.
 
 ### Frontend
 
@@ -57,7 +51,7 @@ npm install
 npm start
 ```
 
-Runs at http://localhost:3000 — keep terminal open.
+Runs at http://localhost:3000 — keep this terminal open.
 
 ---
 
@@ -66,36 +60,70 @@ Runs at http://localhost:3000 — keep terminal open.
 Open browser and go to:
 http://localhost:3000?user=student1
 
-intelligent-task-prioritizer/
-│
-├── backend/
-│
-├── frontend/
-│
-├── public/
-│
-├── src/
-│
-├── .gitignore
-├── README.md
-├── package-lock.json
-└── package.json
+Replace student1 with your assigned participant identifier.
+
 ---
+
+## Project Structure
+intelligent-task-prioritizer/
+├── backend/
+│   ├── core/
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   └── wsgi.py
+│   ├── prioritization/
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── views.py
+│   │   └── urls.py
+│   ├── requirements.txt
+│   └── manage.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── TaskDashboard.jsx
+│   │   └── services/
+│   │       └── api.js
+│   └── package.json
+├── public/
+├── src/
+├── .gitignore
+├── package-lock.json
+├── package.json
+└── README.md
+
+---
+
 ## API Endpoints
 
 | Method | Endpoint | Action |
 |---|---|---|
 | GET | /api/tasks/?user=X | Get tasks for student X |
 | POST | /api/tasks/?user=X | Create task for student X |
-| PUT | /api/tasks/{id}/?user=X | Update and recalculate |
+| PUT | /api/tasks/{id}/?user=X | Update and recalculate score |
 | DELETE | /api/tasks/{id}/?user=X | Delete task |
+
+---
+
+## MCDM Algorithm
+
+The priority engine executes inside Django's Task model save() method, ensuring automatic recalculation on every database write.
+
+| Component | Formula | Theory |
+|---|---|---|
+| Importance | I = (C/C_max) × G | AHP / WLC (Saaty, 1980) |
+| Urgency | U = 1 / (1 + H/36) | Temporal Motivation Theory (Steel, 2007) |
+| Effort | E = (D + In) / 20 | Cognitive Load Theory (Sweller, 1994) |
+| Final Score | P = 100 × (0.65I + 0.25U + 0.10E) | Weighted Linear Combination |
+
+**24-Hour Override Rule:** Any incomplete task with H ≤ 24 hours is automatically classified URGENT regardless of computed score.
 
 ---
 
 ## Testing
 
-Manual: 10 black-box test cases — all passed
-Automated: 4 Selenium WebDriver tests — all passed
+- Manual: 10 black-box test cases — all passed
+- Automated: 4 Selenium WebDriver tests — all passed
 
 ```bash
 cd backend
@@ -108,15 +136,15 @@ python selenium_tests.py
 
 | ID | Issue | Proposed Fix |
 |---|---|---|
-| KI01 | Mobile layout issues | CSS media queries |
-| KI02 | No onboarding guide | About modal |
-| KI03 | No push notifications | Web-Push API |
-| KI04 | URL parameter isolation | JWT authentication |
+| KI01 | Mobile layout issues | CSS media queries and Flexbox/Grid |
+| KI02 | No onboarding guide | Interactive about modal |
+| KI03 | No push notifications | Web-Push API integration |
+| KI04 | URL parameter isolation only | JWT token authentication |
 
 ---
 
 ## Evaluation Results
 
-- SUS Mean: 72.07 (benchmark 68.0) ✅
-- PSS-4 reduction: t(22)=2.472, p=.022 ✅
-- 91.3% rated system better than previous method ✅
+- SUS Mean: 72.07 — exceeds industry benchmark of 68.0 ✅
+- PSS-4 stress reduction: t(22) = 2.472, p = .022 ✅
+- 91.3% of participants rated system better than previous method ✅
