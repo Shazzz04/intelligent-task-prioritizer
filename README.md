@@ -1,70 +1,135 @@
-# Getting Started with Create React App
+# Intelligent Task Prioritization System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+BSc Software Engineering Final Year Project
+CIS3425 Research and Development Project
+Asian Institute of Business and Science, 2025/2026
+Student: Shaza Faizer | Supervisor: Deshan Cooray
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Overview
 
-### `npm start`
+A full-stack web application that automatically prioritizes academic
+tasks using a formally derived MCDM algorithm:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+P = 100 × (0.65I + 0.25U + 0.10E)
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Importance (I) — AHP pairwise derivation (Saaty, 1980)
+- Urgency (U) — Temporal Motivation Theory (Steel, 2007)
+- Effort (E) — Cognitive Load Theory (Sweller, 1994)
 
-### `npm test`
+---
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## System Architecture
 
-### `npm run build`
+- Frontend: React.js — runs locally on localhost:3000
+- Backend: Django — runs locally on localhost:8000
+- Database: SQLite via Django ORM
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Note: The system was deployed on Railway (backend) and Netlify
+(frontend) throughout the participant evaluation period
+(24 March – 7 April 2026). Following evaluation, both layers
+were transitioned to a local environment for the viva
+demonstration. The MCDM logic, database, and interface
+remain identical across both environments.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Local Setup
 
-### `npm run eject`
+### Backend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+git clone https://github.com/Shazzz04/intelligent-task-prioritizer
+cd intelligent-task-prioritizer/backend
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Runs at http://localhost:8000 — keep terminal open.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Frontend
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+cd frontend
+npm install
+npm start
+```
 
-## Learn More
+Runs at http://localhost:3000 — keep terminal open.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Access
 
-### Code Splitting
+Open browser and go to:
+http://localhost:3000?user=student1
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+Replace student1 with your assigned identifier.
 
-### Analyzing the Bundle Size
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Project Structure
+intelligent-task-prioritizer/
+├── backend/
+│   ├── prioritization/
+│   │   ├── models.py        # MCDM engine in save() method
+│   │   ├── serializers.py   # REST serialization
+│   │   ├── views.py         # Student filtering ViewSet
+│   │   └── urls.py
+│   ├── core/
+│   │   ├── settings.py
+│   │   └── urls.py
+│   ├── requirements.txt
+│   └── manage.py
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   └── TaskDashboard.jsx
+│   │   └── services/
+│   │       └── api.js
+│   └── package.json
+└── README.md
 
-### Making a Progressive Web App
+---
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## API Endpoints
 
-### Advanced Configuration
+| Method | Endpoint | Action |
+|---|---|---|
+| GET | /api/tasks/?user=X | Get tasks for student X |
+| POST | /api/tasks/?user=X | Create task for student X |
+| PUT | /api/tasks/{id}/?user=X | Update and recalculate |
+| DELETE | /api/tasks/{id}/?user=X | Delete task |
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+---
 
-### Deployment
+## Testing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+Manual: 10 black-box test cases — all passed
+Automated: 4 Selenium WebDriver tests — all passed
 
-### `npm run build` fails to minify
+```bash
+cd backend
+python selenium_tests.py
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+
+## Known Issues
+
+| ID | Issue | Proposed Fix |
+|---|---|---|
+| KI01 | Mobile layout issues | CSS media queries |
+| KI02 | No onboarding guide | About modal |
+| KI03 | No push notifications | Web-Push API |
+| KI04 | URL parameter isolation | JWT authentication |
+
+---
+
+## Evaluation Results
+
+- SUS Mean: 72.07 (benchmark 68.0) ✅
+- PSS-4 reduction: t(22)=2.472, p=.022 ✅
+- 91.3% rated system better than previous method ✅
